@@ -127,10 +127,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\Downloads\cs programs\c++\raytracer\lib\vec3.h" />
+    <ClInclude Include="color.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="imagemaker.cpp" />
+    <ClCompile Include="vec3.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
