@@ -128,6 +128,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="color.hpp" />
+    <ClInclude Include="ray.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="imagemaker.cpp" />
