@@ -7,7 +7,6 @@
 
 // Look at book for math on this
 // Center is of sphere
-// Test git 
 bool hit_sphere(const point3& center, double radius, const ray& r) {
     double a = dot( r.direction(), r.direction() );
     double b = 2 * dot( r.direction(), (r.origin() - center) );
