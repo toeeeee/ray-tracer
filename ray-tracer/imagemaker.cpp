@@ -7,12 +7,18 @@
 
 // Look at book for math on this
 // Center is of sphere
-bool hit_sphere(const point3& center, double radius, const ray& r) {
+double hit_sphere(const point3& center, double radius, const ray& r) {
     double a = dot( r.direction(), r.direction() );
     double b = 2 * dot( r.direction(), (r.origin() - center) );
     double c = dot( (r.origin() - center), (r.origin() - center) ) - radius * radius;
     double discriminant = b*b - 4*a*c;
-    return (discriminant >= 0);
+    
+    if (discriminant < 0) {
+        return -1.0;
+    }
+    else {
+        return (-b - sqrt(discriminant))
+    }
 }
 
 color ray_color(const ray& r) { 
