@@ -23,6 +23,15 @@ inline double degrees_to_radians(double degrees) {
     return degrees * pi / 180.0;
 }
 
+inline double random_double() {
+    // random real in [0,1)
+    return std::rand() / (RAND_MAX + 1.0);
+}
+
+inline double random_double(double min, double max) {
+    return (max - min) * random_double() + min;
+}
+
 // Common Headers
 
 #include "color.h"
