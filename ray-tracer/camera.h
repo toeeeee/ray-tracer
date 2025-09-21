@@ -11,6 +11,7 @@ class camera {
 public:
     double aspect_ratio = 1.0; // over height
     int image_width = 100; // in pixel cnt
+    int samples_per_pix = 10;
 
 
 	void render(const hittable& world) {
@@ -25,8 +26,13 @@ public:
                 auto ray_direction = pixel_center - center;
                 ray r(center, ray_direction);
 
-                color pixel_color = ray_color(r, world);
-                write_color(fout, pixel_color);
+                color pixel_color = color(0, 0, 0);
+                for (int k = 0; k < samples_per_pix; k++) {
+                    ray r = get_ray(i, j);
+                    pixel_color += ray_color(r, world);
+                }
+
+                write_color(fout, pixel_sample_scale*pixel_color);
             }
         }
 
@@ -39,10 +45,12 @@ private:
     point3 pixel00_loc; // pixel 0,0 in image .... top left
     vec3 pixel_delta_u; // right offset
     vec3 pixel_delta_v; // down offset
+    double pixel_sample_scale; // scaling factor for pixel color otherwise color wouldn't make sense
 
 	void initialize() {
         image_height = int(image_width / aspect_ratio);
         image_height = (image_height < 1) ? 1 : image_height;
+        pixel_sample_scale = 1.0 / samples_per_pix;
 
         center = point3(0, 0, 0);
 
@@ -62,6 +70,24 @@ private:
             center - vec3(0, 0, focal_length) - viewport_u / 2 - viewport_v / 2;
          pixel00_loc = viewport_upper_left + 0.5 * (pixel_delta_u + pixel_delta_v);
 	}
+
+    ray get_ray(int i, int j) const {
+        // Get a ray that points to a random sample point around pixel (i,j)
+        
+        auto offset = sample_square();
+        auto pixel_sample = pixel00_loc +
+            pixel_delta_u * (i + offset.x()) +
+            pixel_delta_v * (j + offset.y());
+
+        auto ray_direction = pixel_sample - center;
+        return ray(center, ray_direction);
+    }
+
+    vec3 sample_square() const {
+        // Vector to random point in a square region centered at the pixel that extends halfway to the 4 neighbor pixels
+        // [-.5 to .5, -.5 to .5] unit square
+        return vec3(random_double() - 0.5, random_double() - 0.5, 0);
+    }
 
     color ray_color(const ray& r, const hittable& world) {
         hit_record rec;
