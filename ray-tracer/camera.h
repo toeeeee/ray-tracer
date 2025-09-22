@@ -91,8 +91,8 @@ private:
     }
 
     color ray_color(const ray& r, int depth, const hittable& world) {
-        if (depth < 0) {
-            return color(0,0,0)
+        if (depth <= 0) {
+            return color(0, 0, 0);
         }
 
         hit_record rec;
