@@ -12,6 +12,7 @@ public:
     double aspect_ratio = 1.0; // over height
     int image_width = 100; // in pixel cnt
     int samples_per_pix = 10;
+    int max_depth = 10;
 
 
 	void render(const hittable& world) {
@@ -29,7 +30,7 @@ public:
                 color pixel_color = color(0, 0, 0);
                 for (int k = 0; k < samples_per_pix; k++) {
                     ray r = get_ray(i, j);
-                    pixel_color += ray_color(r, world);
+                    pixel_color += ray_color(r, max_depth, world);
                 }
 
                 write_color(fout, pixel_sample_scale*pixel_color);
@@ -83,16 +84,23 @@ private:
         return ray(center, ray_direction);
     }
 
-    vec3 sample_square() const {
+    vec3 sample_square() const { // Note: look into other sampling methods
         // Vector to random point in a square region centered at the pixel that extends halfway to the 4 neighbor pixels
         // [-.5 to .5, -.5 to .5] unit square
         return vec3(random_double() - 0.5, random_double() - 0.5, 0);
     }
 
-    color ray_color(const ray& r, const hittable& world) {
+    color ray_color(const ray& r, int depth, const hittable& world) {
+        if (depth < 0) {
+            return color(0,0,0)
+        }
+
         hit_record rec;
         if (world.hit(r, interval(0, infinity), rec)) {
-            return 0.5 * (rec.normal + color(1, 1, 1));
+            vec3 direction = random_on_hemisphere(rec.normal);
+            // Recursively bounce the ray for a diffusive material... 
+            ray bounce = ray(rec.p, direction);
+            return 0.5 * ray_color(bounce, depth-1, world); // Each bounce means a loss of 50% of color
         }
 
         vec3 unit_direction = unit_vector(r.direction());
