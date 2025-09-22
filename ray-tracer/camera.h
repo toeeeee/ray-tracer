@@ -97,7 +97,9 @@ private:
 
         hit_record rec;
         if (world.hit(r, interval(0.001, infinity), rec)) { // 0.001 to remove shadow acne where ray origin isn't flush with surface due to rounding errors
-            vec3 direction = random_on_hemisphere(rec.normal);
+            // vec3 direction = random_on_hemisphere(rec.normal); Evenly random about the surface of sphere
+            // Lambertian 
+            vec3 direction = rec.normal + random_unit_vector();
             // Recursively bounce the ray for a diffusive material... 
             ray bounce = ray(rec.p, direction);
             return 0.5 * ray_color(bounce, depth-1, world); // Each bounce means a loss of 50% of color
