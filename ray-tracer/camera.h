@@ -5,7 +5,7 @@
 #include <fstream>
 #include "hittable.h"
 
-std::ofstream fout("img.ppm");
+std::ofstream fout("img2.ppm");
 
 class camera {
 public:
@@ -102,9 +102,11 @@ private:
             vec3 direction = rec.normal + random_unit_vector();
             // Recursively bounce the ray for a diffusive material... 
             ray bounce = ray(rec.p, direction);
-            return 0.5 * ray_color(bounce, depth-1, world); // Each bounce means a loss of 50% of color
+            float x = 0.5;
+            return x * ray_color(bounce, depth-1, world); // Each bounce means a loss of x% of color
         }
 
+        // Sky
         vec3 unit_direction = unit_vector(r.direction());
         auto a = 0.5 * (unit_direction.y() + 1.0);
         return (1.0 - a) * color(1.0, 1.0, 1.0) + a * color(0.5, 0.7, 1.0);
