@@ -53,6 +53,13 @@ public:
         return e[0] * e[0] + e[1] * e[1] + e[2] * e[2];
     }
 
+    bool near_zero() const {
+        auto s = 1e-8;
+        return (std::fabs(e[0]) < s) && 
+               (std::fabs(e[1]) < s) &&
+               (std::fabs(e[2]) < s);
+    }
+
 };
 
 using point3 = vec3;
@@ -65,8 +72,17 @@ inline vec3 operator+(const vec3& u, const vec3& v) {
     return vec3(u.e[0] + v.e[0], u.e[1] + v.e[1], u.e[2] + v.e[2]);
 }
 
+inline vec3 operator+(const vec3& u, const float f) {
+    return vec3(u.e[0] + f, u.e[1] + f, u.e[2] + f);
+}
+
 inline vec3 operator-(const vec3& u, const vec3& v) {
     return vec3(u.e[0] - v.e[0], u.e[1] - v.e[1], u.e[2] - v.e[2]);
+}
+
+
+inline vec3 operator-(const vec3& u, const float f) {
+    return vec3(u.e[0] - f, u.e[1] - f, u.e[2] - f);
 }
 
 inline vec3 operator*(const vec3& u, const vec3& v) {
@@ -115,6 +131,10 @@ inline vec3 random_on_hemisphere(vec3 const& normal) {
     // Random vector on hemisphere along normal
     vec3 on_unit_sphere = random_unit_vector();
     return (dot(on_unit_sphere, normal) > 0) ? on_unit_sphere : -on_unit_sphere;
+}
+
+inline vec3 reflected(vec3 const& incident, vec3 const& normal) {
+    return incident - 2*dot(incident, normal)*normal;
 }
 
 

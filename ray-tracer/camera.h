@@ -4,6 +4,7 @@
 
 #include <fstream>
 #include "hittable.h"
+#include "material.h"
 
 std::ofstream fout("img2.ppm");
 
@@ -11,7 +12,7 @@ class camera {
 public:
     double aspect_ratio = 1.0; // over height
     int image_width = 100; // in pixel cnt
-    int samples_per_pix = 10;
+    int samples_per_pix = 100;
     int max_depth = 10;
 
 
@@ -97,13 +98,12 @@ private:
 
         hit_record rec;
         if (world.hit(r, interval(0.001, infinity), rec)) { // 0.001 to remove shadow acne where ray origin isn't flush with surface due to rounding errors
-            // vec3 direction = random_on_hemisphere(rec.normal); Evenly random about the surface of sphere
-            // Lambertian 
-            vec3 direction = rec.normal + random_unit_vector();
-            // Recursively bounce the ray for a diffusive material... 
-            ray bounce = ray(rec.p, direction);
-            float x = 0.5;
-            return x * ray_color(bounce, depth-1, world); // Each bounce means a loss of x% of color
+            ray scattered;
+            color attenuation;
+            if (rec.mat->scatter(r, rec, attenuation, scattered)) {
+                return attenuation * ray_color(scattered, depth-1, world); // Each bounce means a loss of x% of color
+            }
+            return color(0, 0, 0); // No scatter = absorbed and black 
         }
 
         // Sky
