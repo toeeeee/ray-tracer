@@ -60,20 +60,21 @@ private:
 
 class metal : public material {
 public:
-	metal(const color& albedo) : albedo(albedo) {}
+	metal(const color& albedo, double fuzz) : albedo(albedo), fuzz(fuzz) {}
 
 	bool scatter(const ray& r_in, const hit_record& rec,
 				 color& attenuation, ray& scattered)
 		const override {
-		auto scatter_dir = reflected(r_in.direction(), rec.normal);
+		vec3 scatter_dir = reflected(r_in.direction(), rec.normal); // Both dir and normal are unit vecs
+		scatter_dir = unit_vector(scatter_dir) + (fuzz * random_unit_vector()); // Normalize scatter dir so fuzz sphere is consistently away from the surface by 1
 		scattered = ray(rec.p, scatter_dir);
 		attenuation = albedo;
-		return true;
+		return (dot(scattered.direction(), rec.normal) > 0); // Make sure fuzzed direction is above object
 	}
 
 private:
 	color albedo;
-
+	double fuzz;
 };
 #endif 
 
