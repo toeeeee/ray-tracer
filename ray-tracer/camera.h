@@ -12,8 +12,11 @@ class camera {
 public:
     double aspect_ratio = 1.0; // over height
     int image_width = 100; // in pixel cnt
-    int samples_per_pix = 100;
-    int max_depth = 10;
+    int samples_per_pix = 100; // Self explanatory
+    int max_depth = 10; // Number of recursive ray bounces  for each ray sent out
+
+    double vfov = 90; // Vertical view angle
+
 
 
 	void render(const hittable& world) {
@@ -58,7 +61,9 @@ private:
 
         // Viewport
         auto focal_length = 1.0; // -z is into the camera, +y is down, x is right
-        auto viewport_height = 2.0;
+        auto theta = degrees_to_radians(vfov);
+        auto h = std::tan(theta / 2) * focal_length; // height
+        auto viewport_height = 2.0 * h;
         auto viewport_width = viewport_height * (double(image_width) / image_height);
 
         auto viewport_u = vec3(viewport_width, 0, 0);
