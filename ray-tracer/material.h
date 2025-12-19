@@ -98,7 +98,7 @@ public:
 		bool no_refract = rr * sintheta > 1.0;
 
 		vec3 direction;
-		if (no_refract) {
+		if (no_refract || reflectance(costheta, outer, inner) > random_double()) {
 			direction = reflected(r_in.direction(), rec.normal); 
 		}
 		else {
@@ -111,6 +111,12 @@ public:
 private:
 	double outer; // Enclosing material refractive index
 	double inner; // Material of object
+
+	static double reflectance(double cosine, double outer, double inner) {
+		auto r0 = ((outer - inner) / (outer + inner));
+		r0 = r0 * r0;
+		return r0 + (1 - r0) * std::pow((1 - cosine), 5);
+	}
 };
 
 #endif 
