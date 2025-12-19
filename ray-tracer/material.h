@@ -76,5 +76,42 @@ private:
 	color albedo;
 	double fuzz;
 };
+
+
+class dielectric : public material {
+public:
+	dielectric(double outer, double inner) : outer(outer), inner(inner) {}
+
+	bool scatter(const ray& r_in, const hit_record& rec,
+				 color& attenuation, ray& scattered) 
+	const override {
+		auto refractive_ratio = outer / inner;
+		attenuation = color(1.0, 1.0, 1.0); // There is no loss of color, just warping
+
+		// Check if ray is entering ball from outside or inside
+		double rr = rec.front_face ? refractive_ratio : 1/refractive_ratio;
+
+		// Total internal reflection
+		vec3 unit_dir = unit_vector(r_in.direction());
+		auto costheta = std::fmin(dot(-unit_dir, rec.normal), 1.0);
+		auto sintheta = std::sqrt(1 - costheta * costheta);
+		bool no_refract = rr * sintheta > 1.0;
+
+		vec3 direction;
+		if (no_refract) {
+			direction = reflected(r_in.direction(), rec.normal); 
+		}
+		else {
+			direction = refract(rr, unit_dir, rec.normal);
+		}
+
+		scattered = ray(rec.p, direction);
+		return true;
+	}
+private:
+	double outer; // Enclosing material refractive index
+	double inner; // Material of object
+};
+
 #endif 
 

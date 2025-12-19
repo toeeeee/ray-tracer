@@ -137,5 +137,14 @@ inline vec3 reflected(vec3 const& incident, vec3 const& normal) {
     return incident - 2*dot(incident, normal)*normal;
 }
 
+/* Derivation for how Snell's law is applied here can be found in the github
+*/
+
+inline vec3 refract(double refractive_ratio, vec3 const& incident, vec3 const normal) {
+    vec3 refracted_perpendicular = refractive_ratio * (incident - dot(incident, normal) * normal);
+    vec3 refracted_parallel = -sqrt(1 - refracted_perpendicular.length_squared()) * normal;
+    return refracted_perpendicular + refracted_parallel;
+}
+
 
 #endif
