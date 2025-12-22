@@ -16,7 +16,9 @@ public:
     int max_depth = 10; // Number of recursive ray bounces  for each ray sent out
 
     double vfov = 90; // Vertical view angle
-
+    point3 lookfrom = point3(0, 0, 0);
+    point3 lookat = point3(0, 0, -1);
+    vec3 viewup = vec3(0, 1, 0);
 
 
 	void render(const hittable& world) {
@@ -52,29 +54,38 @@ private:
     vec3 pixel_delta_v; // down offset
     double pixel_sample_scale; // scaling factor for pixel color otherwise color wouldn't make sense
 
+    vec3 u, v, w; // u is right, v up, w into
+
 	void initialize() {
         image_height = int(image_width / aspect_ratio);
         image_height = (image_height < 1) ? 1 : image_height;
         pixel_sample_scale = 1.0 / samples_per_pix;
 
-        center = point3(0, 0, 0);
+        center = lookfrom;
+
+        // Coordinate system
+        vec3 temp = -(lookat - lookfrom);
+        w = unit_vector(temp);
+        u = unit_vector(cross(viewup, w));
+        v = -cross(u, w);  // Negative because w is negative depth; think right hand rule
+
 
         // Viewport
-        auto focal_length = 1.0; // -z is into the camera, +y is down, x is right
+        auto focal_length = temp.length(); // -z is into the camera, +y is down, x is right
         auto theta = degrees_to_radians(vfov);
         auto h = std::tan(theta / 2) * focal_length; // height
         auto viewport_height = 2.0 * h;
         auto viewport_width = viewport_height * (double(image_width) / image_height);
 
-        auto viewport_u = vec3(viewport_width, 0, 0);
-        auto viewport_v = vec3(0, -viewport_height, 0);
+        auto viewport_u = viewport_width * u;
+        auto viewport_v = -viewport_height * v;
 
         pixel_delta_u = viewport_u / image_width;
         pixel_delta_v = viewport_v / image_height;
 
         // upper left pixel
         auto viewport_upper_left = 
-            center - vec3(0, 0, focal_length) - viewport_u / 2 - viewport_v / 2;
+            center - focal_length*w - viewport_u/2 - viewport_v/2;
          pixel00_loc = viewport_upper_left + 0.5 * (pixel_delta_u + pixel_delta_v);
 	}
 
