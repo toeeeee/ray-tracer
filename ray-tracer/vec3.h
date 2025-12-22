@@ -133,6 +133,32 @@ inline vec3 random_on_hemisphere(vec3 const& normal) {
     return (dot(on_unit_sphere, normal) > 0) ? on_unit_sphere : -on_unit_sphere;
 }
 
+inline vec3 random_in_unit_disk() { // Concentric disk mapping :) 
+    double a = random_double(-1, 1);
+    double b = random_double(-1, 1);
+
+    double x,y;
+    double phi = 0;
+    double radius = 1;
+
+    if (a == 0 && b == 0) { // Prevent divide by 0. When one is 0 and other isn't, if cases divide by the nonzero!
+        x = 0; y = 0;
+    }
+
+    if (a * a > b * b) { // Left/right - picture in git
+        radius *= a;
+        phi = (pi / 4) * (b / a); // +- pi/4
+    } 
+    else { // Top/bottom
+        radius *= b;
+        phi = (pi / 2) - ((pi / 4) * (a / b)); // +- pi/4 to 3pi/4
+    }
+    x = cos(phi) * radius;
+    y = sin(phi) * radius;
+    
+    return vec3(x, y, 0);
+}
+
 inline vec3 reflected(vec3 const& incident, vec3 const& normal) {
     return incident - 2*dot(incident, normal)*normal;
 }
