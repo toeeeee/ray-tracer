@@ -20,6 +20,10 @@ public:
     point3 lookat = point3(0, 0, -1);
     vec3 viewup = vec3(0, 1, 0);
 
+    double defocus_angle = 0; // Variation of angle of rays through each pixel
+    double focus_dist = 10; // Distance to perfect focus plane (NOT THE image plane)
+    // Here we will assume that the focus dist is the focal length (distance to image plane)
+
 
 	void render(const hittable& world) {
         initialize();
@@ -56,6 +60,10 @@ private:
 
     vec3 u, v, w; // u is right, v up, w into
 
+    vec3 defocus_disk_u; // horz. disk rad
+    vec3 defocus_disk_v; // vert. disk rad
+
+
 	void initialize() {
         image_height = int(image_width / aspect_ratio);
         image_height = (image_height < 1) ? 1 : image_height;
@@ -71,34 +79,48 @@ private:
 
 
         // Viewport
-        auto focal_length = temp.length(); // -z is into the camera, +y is down, x is right
+        // -z is into the camera, +y is down, x is right
         auto theta = degrees_to_radians(vfov);
-        auto h = std::tan(theta / 2) * focal_length; // height
+        auto h = std::tan(theta / 2) * focus_dist; // height
         auto viewport_height = 2.0 * h;
         auto viewport_width = viewport_height * (double(image_width) / image_height);
 
-        auto viewport_u = viewport_width * u;
+        auto viewport_u = viewport_width * u; // Total width and height in our basis
         auto viewport_v = -viewport_height * v;
 
-        pixel_delta_u = viewport_u / image_width;
+        pixel_delta_u = viewport_u / image_width; // the equiv of 1 unit in a dir in our basis
         pixel_delta_v = viewport_v / image_height;
 
         // upper left pixel
         auto viewport_upper_left = 
-            center - focal_length*w - viewport_u/2 - viewport_v/2;
-         pixel00_loc = viewport_upper_left + 0.5 * (pixel_delta_u + pixel_delta_v);
+            center - (focus_dist*w) - viewport_u/2 - viewport_v/2;
+        pixel00_loc = viewport_upper_left + 0.5 * (pixel_delta_u + pixel_delta_v);
+
+        // Calculate camera defocus disk basis vectors
+        auto theta2 = degrees_to_radians(defocus_angle/2);
+        auto defocus_radius = std::tan(theta2) * focus_dist;
+        defocus_disk_u = defocus_radius * u;
+        defocus_disk_v = defocus_radius * v;
 	}
 
     ray get_ray(int i, int j) const {
         // Get a ray that points to a random sample point around pixel (i,j)
+        // Ray is also a sample of points from the defocus disk.
         
         auto offset = sample_square();
         auto pixel_sample = pixel00_loc +
             pixel_delta_u * (i + offset.x()) +
             pixel_delta_v * (j + offset.y());
 
-        auto ray_direction = pixel_sample - center;
-        return ray(center, ray_direction);
+        point3 ray_origin = (defocus_angle <= 0) ? center : defocus_disk_sample(); 
+        vec3 ray_direction = pixel_sample - ray_origin;
+        return ray(ray_origin, ray_direction);
+    }
+
+    vec3 defocus_disk_sample() const {
+        // Return a ray from the defocus disk of the camera
+        vec3 r = random_in_unit_disk_rejection();
+        return center + (r[0] * defocus_disk_u) + (r[1] * defocus_disk_v); // Change unit disk to unit disk in proper basis.
     }
 
     vec3 sample_square() const { // Note: look into other sampling methods

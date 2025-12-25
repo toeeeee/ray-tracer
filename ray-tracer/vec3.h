@@ -133,6 +133,17 @@ inline vec3 random_on_hemisphere(vec3 const& normal) {
     return (dot(on_unit_sphere, normal) > 0) ? on_unit_sphere : -on_unit_sphere;
 }
 
+inline vec3 random_in_unit_disk_rejection() {
+    // Returns a random vector in a unit disk via rejection sampling
+    while (true) {
+        vec3 in_unit_disk = vec3(random_double(-1, 1), random_double(-1, 1), 0);
+        if (in_unit_disk.length_squared() <= 1) {
+            return in_unit_disk;
+        }
+    }
+}
+
+
 inline vec3 random_in_unit_disk() { // Concentric disk mapping :) 
     double a = random_double(-1, 1);
     double b = random_double(-1, 1);
